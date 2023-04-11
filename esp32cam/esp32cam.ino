@@ -15,13 +15,12 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 #include <WiFiManager.h>
+#include <HTTPClient.h>
 
-String serverName = "172.20.10.3";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
-//String serverName = "example.com";   // OR REPLACE WITH YOUR DOMAIN NAME
-
+String displayName = "display-london";
+String serverName = "http://connected-display.herokuapp.com";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
 String serverPath = "/upload";     // The default serverPath should be upload.php
-
-const int serverPort = 3000;
+const int serverPort = 80;
 
 WiFiClient client;
 
@@ -53,18 +52,18 @@ void setup() {
 
   Serial.println("ESP32 cam");
 
-  pinMode(0, INPUT_PULLUP);
-  pinMode(33, OUTPUT);
-  digitalWrite(33, HIGH);
-  delay(100);
-  digitalWrite(33, LOW);
+  //pinMode(0, INPUT);
+  //  pinMode(33, OUTPUT);
+  //  digitalWrite(33, HIGH);
+  //  delay(100);
+  //  digitalWrite(33, LOW);
 
   WiFiManager wm;
 
   bool res;
   // res = wm.autoConnect(); // auto generated AP name from chipid
   // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
-  res = wm.autoConnect("ESP32Cam", "blinkblink"); // password protected ap
+  res = wm.autoConnect(); // password protected ap
 
   if (!res) {
     Serial.println("Failed to connect to WiFi.");
@@ -121,9 +120,8 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(0) == LOW) {
-    sendPhoto();
-  }
+  sendPhoto();
+  delay(timerInterval);
 }
 
 String sendPhoto() {
@@ -142,8 +140,8 @@ String sendPhoto() {
 
   if (client.connect(serverName.c_str(), serverPort)) {
     Serial.println("Connection successful!");
-    String head = "Content-Disposition: form-data; name=\"imageFile\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
-    String tail = "";
+    String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"image\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
+    String tail = "\r\n--RandomNerdTutorials--\r\n";
 
     uint32_t imageLen = fb->len;
     uint32_t extraLen = head.length() + tail.length();
@@ -152,16 +150,18 @@ String sendPhoto() {
     client.println("POST " + serverPath + " HTTP/1.1");
     client.println("Host: " + serverName);
     client.println("Content-Length: " + String(totalLen));
-    client.println("Content-Type: multipart/form-data");
+    client.println("Content-Type: multipart/form-data; boundary=RandomNerdTutorials");
     client.println();
     client.print(head);
 
-    // Send image data
+    Serial.println("Sending image data");
+
     uint8_t *fbBuf = fb->buf;
     size_t fbLen = fb->len;
     for (size_t n = 0; n < fbLen; n = n + 1024) {
       if (n + 1024 < fbLen) {
         client.write(fbBuf, 1024);
+        Serial.print(".");
         fbBuf += 1024;
       }
       else if (fbLen % 1024 > 0) {
@@ -170,6 +170,7 @@ String sendPhoto() {
       }
     }
     client.print(tail);
+    Serial.println(" Done.");
 
     esp_camera_fb_return(fb);
 
