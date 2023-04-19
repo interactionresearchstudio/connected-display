@@ -1,6 +1,8 @@
 /*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp32-cam-post-image-photo-server/
+  Edited code from Rui Santos
+  Complete project details at:
+  https://RandomNerdTutorials.com/esp32-cam-http-post-php-arduino/
+  https://RandomNerdTutorials.com/esp32-cam-post-image-photo-server/
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files.
@@ -11,18 +13,18 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 #include <WiFiManager.h>
-#include <HTTPClient.h>
 
 String displayName = "display-london";
-String serverName = "http://connected-display.herokuapp.com";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
+String serverName = "connected-display.herokuapp.com";   //
 String serverPath = "/upload";     // The default serverPath should be upload.php
-const int serverPort = 80;
+const int serverPort = 443; //server port for HTTPS
 
-WiFiClient client;
+WiFiClientSecure client;
 
 // CAMERA_MODEL_AI_THINKER
 #define PWDN_GPIO_NUM     32
@@ -50,16 +52,8 @@ void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
   Serial.begin(115200);
 
-  Serial.println("ESP32 cam");
-
-  //pinMode(0, INPUT);
-  //  pinMode(33, OUTPUT);
-  //  digitalWrite(33, HIGH);
-  //  delay(100);
-  //  digitalWrite(33, LOW);
-
+  Serial.print("ESP32-CAM");
   WiFiManager wm;
-
   bool res;
   // res = wm.autoConnect(); // auto generated AP name from chipid
   // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
@@ -76,6 +70,7 @@ void setup() {
   Serial.println();
   Serial.print("ESP32-CAM IP Address: ");
   Serial.println(WiFi.localIP());
+
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -117,11 +112,16 @@ void setup() {
     delay(1000);
     ESP.restart();
   }
+
+  sendPhoto();
 }
 
 void loop() {
-  sendPhoto();
-  delay(timerInterval);
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= timerInterval) {
+    sendPhoto();
+    previousMillis = currentMillis;
+  }
 }
 
 String sendPhoto() {
@@ -138,6 +138,7 @@ String sendPhoto() {
 
   Serial.println("Connecting to server: " + serverName);
 
+  client.setInsecure(); //skip certificate validation
   if (client.connect(serverName.c_str(), serverPort)) {
     Serial.println("Connection successful!");
     String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"image\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
@@ -154,14 +155,11 @@ String sendPhoto() {
     client.println();
     client.print(head);
 
-    Serial.println("Sending image data");
-
     uint8_t *fbBuf = fb->buf;
     size_t fbLen = fb->len;
     for (size_t n = 0; n < fbLen; n = n + 1024) {
       if (n + 1024 < fbLen) {
         client.write(fbBuf, 1024);
-        Serial.print(".");
         fbBuf += 1024;
       }
       else if (fbLen % 1024 > 0) {
@@ -170,7 +168,6 @@ String sendPhoto() {
       }
     }
     client.print(tail);
-    Serial.println(" Done.");
 
     esp_camera_fb_return(fb);
 
