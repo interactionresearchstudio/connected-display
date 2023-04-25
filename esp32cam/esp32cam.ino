@@ -45,12 +45,16 @@ WiFiClientSecure client;
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#define FLASH_PIN 4
+
 const int timerInterval = 30000;    // time between each HTTP POST image
 unsigned long previousMillis = 0;   // last time image was sent
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
   Serial.begin(115200);
+
+  pinMode(FLASH_PIN, OUTPUT);
 
   Serial.print("ESP32-CAM");
   WiFiManager wm;
@@ -96,9 +100,10 @@ void setup() {
 
   // init with high specs to pre-allocate larger buffers
   if (psramFound()) {
+    Serial.println("PSRAM found!");
     //config.frame_size = FRAMESIZE_SVGA;
-    config.frame_size = FRAMESIZE_XGA;
-    config.jpeg_quality = 12;  //0-63 lower number means higher quality
+    config.frame_size = FRAMESIZE_UXGA;
+    config.jpeg_quality = 6;  //0-63 lower number means higher quality
     config.fb_count = 2;
   } else {
     config.frame_size = FRAMESIZE_CIF;
@@ -208,5 +213,8 @@ String sendPhoto() {
     getBody = "Connection to " + serverName +  " failed.";
     Serial.println(getBody);
   }
+  digitalWrite(FLASH_PIN, HIGH);
+  delay(100);
+  digitalWrite(FLASH_PIN, LOW);
   return getBody;
 }
