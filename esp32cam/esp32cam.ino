@@ -142,7 +142,7 @@ String sendPhoto() {
   client.setInsecure(); //skip certificate validation
   if (client.connect(serverName.c_str(), serverPort)) {
     Serial.println("Connection successful!");
-    String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"image\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
+    String head = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"image\"; filename=\"" + displayName + ".jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
     String tail = "\r\n--RandomNerdTutorials--\r\n";
 
     uint32_t imageLen = fb->len;
