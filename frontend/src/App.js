@@ -7,26 +7,29 @@ const App = () => {
   const [hash, setHash] = useState(null)
 
   useEffect(() => {
+    fetchImages()
+
+    setInterval(() => {
+      fetchImages()
+    }, 20000)
+  }, [])
+
+  const fetchImages = () => {
     console.log("Fetching new images...")
     fetch('/uploads')
       .then(res => res.json())
       .then(data => {
-        setImages(data)
-        setHash(Date.now())
-        console.log(data)
-      })
-
-    setInterval(() => {
-      console.log("Fetching new images...")
-      fetch('/uploads')
-        .then(res => res.json())
-        .then(data => {
-          setImages(data)
-          setHash(Date.now())
-          console.log(data)
+        let files = []
+        data.map((f) => {
+          if (f.startsWith("display")) {
+            files.push(f)
+          }
         })
-    }, 20000)
-  }, [])
+        setImages(files)
+        setHash(Date.now())
+        console.log(files)
+      })
+  }
 
   return (
     <Container fluid id="main-container">
