@@ -1,9 +1,15 @@
 const express = require('express')
+const path = require('path')
 const fileUpload = require('express-fileupload')
 const app = express()
 const port = process.env.PORT || 3000
 const fs = require('fs')
+const cors = require('cors')
 const isImage = require('is-image')
+
+app.use(cors({
+    origin: '*'
+}))
 
 app.use(
     fileUpload({
@@ -15,7 +21,7 @@ app.use(
 )
 
 // Serve frontend
-app.use(express.static('./public'))
+app.use(express.static(path.resolve(__dirname, '../frontend/build')))
 
 // Serve images
 app.use('/uploads', express.static('./upload'))
