@@ -21,7 +21,7 @@ app.use(
 )
 
 // Serve frontend
-app.use(express.static(path.resolve(__dirname, '../frontend/build')))
+app.use(express.static(path.resolve(__dirname, './build')))
 
 // Serve images
 app.use('/uploads', express.static('./upload'))
