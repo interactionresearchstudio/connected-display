@@ -22,6 +22,7 @@ app.use(
 
 // Serve frontend
 app.use(express.static(path.resolve(__dirname, './build')))
+app.use('/manualupload', express.static(path.resolve(__dirname, './public/index.html')))
 
 // Serve images
 app.use('/uploads', express.static('./upload'))
