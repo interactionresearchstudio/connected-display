@@ -42,6 +42,33 @@ app.get('/uploads', (req, res) => {
     })
 })
 
+// Serve latest image from device
+app.get('/uploads/:deviceName/latest', (req, res) => {
+    fs.readdir(__dirname + '/uploads', (err, files) => {
+        if (err) {
+            return res.sendStatus(500)
+        }
+        // Find images for this device
+        let deviceImages = files.filter((file) => file.startsWith(req.params.deviceName))
+
+        // Sort by timestamp
+        deviceImages.sort((a, b) => {
+            const ap = a.split('-T').pop()
+            const bp = b.split('-T').pop()
+            return (parseInt(ap) > parseInt(bp) ? -1 : 1)
+        })
+
+        console.log(deviceImages);
+
+        // Redirect to latest image
+        if (deviceImages.length > 0) {
+            res.redirect(`/uploads/${deviceImages[0]}`)
+        } else {
+            res.sendStatus(404)
+        }
+    })
+})
+
 // Upload route
 app.post('/upload/:deviceName', (req, res) => {
     // Get the file that was set to our field named "image"
@@ -64,7 +91,7 @@ app.post('/upload/:deviceName', (req, res) => {
     }
 
     // Move the uploaded image to our upload folder
-    image.mv(`${__dirname}/uploads/${req.params.deviceName}-${Date.now()}.jpg`)
+    image.mv(`${__dirname}/uploads/${req.params.deviceName}-T${Date.now()}.jpg`)
 
     // All good
     res.sendStatus(200)
