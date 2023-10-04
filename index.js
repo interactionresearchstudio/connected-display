@@ -20,16 +20,15 @@ app.use(
     })
 )
 
-// Serve frontend
-app.use(express.static(path.resolve(__dirname, './build')))
+// Serve image upload form
 app.use('/manualupload', express.static(path.resolve(__dirname, './public/index.html')))
 
 // Serve images
-app.use('/uploads', express.static('./upload'))
+app.use('/uploads', express.static('./uploads'))
 
 // Serve list of images
 app.get('/uploads', (req, res) => {
-    fs.readdir(__dirname + '/upload', (err, files) => {
+    fs.readdir(__dirname + '/uploads', (err, files) => {
         if (err) {
             return res.sendStatus(500)
         }
@@ -44,11 +43,13 @@ app.get('/uploads', (req, res) => {
 })
 
 // Upload route
-app.post('/upload', (req, res) => {
+app.post('/upload/:deviceName', (req, res) => {
     // Get the file that was set to our field named "image"
     const { image } = req.files
     
     console.log(image)
+    
+    console.log(`Device name: ${req.params.deviceName}`)
 
     // If no image submitted, exit
     if (!image) {
@@ -63,7 +64,7 @@ app.post('/upload', (req, res) => {
     }
 
     // Move the uploaded image to our upload folder
-    image.mv(__dirname + '/upload/' + image.name)
+    image.mv(`${__dirname}/uploads/${req.params.deviceName}-${Date.now()}.jpg`)
 
     // All good
     res.sendStatus(200)

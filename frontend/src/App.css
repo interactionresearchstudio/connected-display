@@ -1,8 +1,0 @@
-#main-container {
-  display: grid;
-  grid-template-columns: 33.33% 33.33% 33.33%;
-}
-
-#main-container img {
-  width: 100%;
-}

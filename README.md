@@ -1,15 +1,11 @@
 # Connected Display Frontend / Backend
 
-This repository contains the frontend and backend for the Connected Studio connected display idea.
+This repository contains the backend for the Connected Studio connected display idea.
 
 ## API routes
 
-`/`
-Currently the root provides a manual way to upload an image to the server with an HTML form. 
-This will eventually be replaced with the React frontend that shows images uploaded.
-
-`/upload` (POST)
-Upload an image. Filenames that already exist on the file system will be overwritten.
+`/upload/device-name` (POST)
+Upload an image and tags it with the device name.
 
 `/uploads` (GET)
 Get list of images on the server.
@@ -17,15 +13,19 @@ Get list of images on the server.
 `/uploads/filename.jpg` (GET)
 Get a specific image.
 
+`/uploads/device-name/latest` (GET)
+
+`/manualupload`
+A manual way to upload an image to the server with an HTML form. 
+
 ## Running the server locally
 
 ### Requirements
 - Docker
 - docker-compose
 
-1. Navigate to `./server`
-2. Run `docker-compose build`
-3. Once the container is built, run `docker-compose up`.
+1. Run `docker-compose build`
+2. Once the container is built, run `docker-compose up`.
 3. The server should be running on port 80.
 
 ## Production
