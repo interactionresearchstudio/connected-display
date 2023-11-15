@@ -14,9 +14,13 @@ Get list of images on the server.
 Get a specific image.
 
 `/uploads/device-name/latest` (GET)
+Get the latest images from a device.
 
-`/manualupload`
+`/manualupload` (GET)
 A manual way to upload an image to the server with an HTML form. 
+
+`/devices` (GET)
+Get list of devices on the server.
 
 ## Running the server locally
 
