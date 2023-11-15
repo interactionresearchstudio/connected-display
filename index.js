@@ -42,6 +42,29 @@ app.get('/uploads', (req, res) => {
     })
 })
 
+app.get('/devices', (req, res) => {
+    fs.readdir(__dirname + '/uploads', (err, files) => {
+        if (err) {
+            return res.sendStatus(500)
+        }
+        let devices = []
+        files.forEach(file => {
+            if (isImage(file)) {
+                //images.push(file)
+                // Get substring of image
+                // If substring not in list, add to list
+                const deviceName = file.substring(0, file.indexOf('-T'))
+                if (deviceName) {
+                    if (!devices.includes(deviceName)) {
+                        devices.push(deviceName)
+                    }
+                }
+            }
+        })
+        return res.json(devices)
+    })
+})
+
 // Serve latest image from device
 app.get('/uploads/:deviceName/latest', (req, res) => {
     fs.readdir(__dirname + '/uploads', (err, files) => {
@@ -49,6 +72,8 @@ app.get('/uploads/:deviceName/latest', (req, res) => {
             return res.sendStatus(500)
         }
         // Find images for this device
+        // TODO maybe startsWith isn't a good way of doing this, as there could be two devices
+        // called device2 and device22
         let deviceImages = files.filter((file) => file.startsWith(req.params.deviceName))
 
         // Sort by timestamp
