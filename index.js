@@ -72,9 +72,7 @@ app.get('/uploads/:deviceName/latest', (req, res) => {
             return res.sendStatus(500)
         }
         // Find images for this device
-        // TODO maybe startsWith isn't a good way of doing this, as there could be two devices
-        // called device2 and device22
-        let deviceImages = files.filter((file) => file.startsWith(req.params.deviceName))
+        let deviceImages = files.filter((file) => file.substring(0, file.indexOf('-T')) === req.params.deviceName)
 
         // Sort by timestamp
         deviceImages.sort((a, b) => {
@@ -101,7 +99,7 @@ app.get('/uploads/:deviceName', (req, res) => {
             return res.sendStatus(500)
         }
         // Find images for this device
-        let deviceImages = files.filter((file) => file.startsWith(req.params.deviceName))
+        let deviceImages = files.filter((file) => file.substring(0, file.indexOf('-T')) === req.params.deviceName)
 
         // Sort by timestamp
         deviceImages.sort((a, b) => {
