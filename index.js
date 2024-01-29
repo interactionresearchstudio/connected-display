@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000
 const fs = require('fs')
 const cors = require('cors')
 const isImage = require('is-image')
+const sharp = require('sharp')
 
 app.use(cors({
     origin: '*'
@@ -140,11 +141,22 @@ app.post('/upload/:deviceName', (req, res) => {
         return res.sendStatus(400)
     }
 
-    // Move the uploaded image to our upload folder
-    image.mv(`${__dirname}/uploads/${req.params.deviceName}-T${Date.now()}.jpg`)
+    const filename = `${__dirname}/uploads/${req.params.deviceName}-T${Date.now()}.jpg`
 
-    // All good
-    res.sendStatus(200)
+    // Move the uploaded image to our upload folder
+    image.mv(filename, (err) => {
+        if (!err) {
+            sharp(filename)
+            .rotate(-90)
+            .withMetadata()
+            .toBuffer(function(err, buffer) {
+                if(err) throw err
+                fs.writeFile(filename, buffer, function() {
+                    return res.sendStatus(200)
+                });
+            })
+        }
+    })
 })
 
 app.listen(port, () => {
