@@ -2,13 +2,22 @@ version: '3'
 
 services:
   image-server:
+    container_name: nodejs
     build:
-      context: .
+      context: ./nodejs
       dockerfile: Dockerfile
+    restart: always
     volumes:
-      - ./uploads:/usr/src/app/uploads
-    container_name: image-server
-    restart: unless-stopped
+      - ./nodejs/uploads:/usr/src/app/uploads
     ports:
-      - "80:3000"
+      - "3000:3000"
     command: node index.js
+
+  proxy:
+    container_name: proxy
+    restart: always
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
