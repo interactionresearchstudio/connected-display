@@ -1,0 +1,1 @@
+31 2 4 * * /root/.acme.sh/acme.sh --issue --server letsencrypt -d irs-iot.ddns.net --dns dns_gd -k 4096 && curl -fsS -m 10 --retry 5 https://hc-ping.com/49e857b2-c9b5-4b96-8565-01edfee31c10
